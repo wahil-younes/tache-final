@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>To Do List Travail</title>
+  
+  <script type="application/json" id="priorityData">
+    [
+      {"value": "Très élevée", "label": "Très élevée"},
+      {"value": "Élevée", "label": "Élevée"},
+      {"value": "Moyenne", "label": "Moyenne"},
+      {"value": "Basse", "label": "Basse"},
+      {"value": "Très basse", "label": "Très basse"}
+    ]
+  </script>
+  
+  <script type="application/json" id="progressData">
+    [
+      {"value": "Pas commencée", "label": "Pas commencée"},
+      {"value": "Débutée", "label": "Débutée"},
+      {"value": "À moitié réalisée", "label": "À moitié réalisée"},
+      {"value": "En progression", "label": "En progression"},
+      {"value": "Terminée", "label": "Terminée"}
+    ]
+  </script>
+  
+  <script type="application/json" id="difficultyData">
+    [
+      {"value": "Très facile", "label": "Très facile"},
+      {"value": "Facile", "label": "Facile"},
+      {"value": "Modérée", "label": "Modérée"},
+      {"value": "Difficile", "label": "Difficile"},
+      {"value": "Très difficile", "label": "Très difficile"}
+    ]
+  </script>
+  
+  <script type="application/json" id="durationData">
+    [
+      {"value": "Moins de 30 minutes", "label": "Moins de 30 minutes"},
+      {"value": "30 min à 1h", "label": "30 min à 1h"},
+      {"value": "1 à 2 heures", "label": "1 à 2 heures"},
+      {"value": "2 à 4 heures", "label": "2 à 4 heures"},
+      {"value": "Plus de 4 heures", "label": "Plus de 4 heures"}
+    ]
+  </script>
+  
+  <script type="application/json" id="typeData">
+    [
+      {"value": "Exercice", "label": "Exercice"},
+      {"value": "Évaluation", "label": "Évaluation"},
+      {"value": "Présentation orale", "label": "Présentation orale"},
+      {"value": "Projet", "label": "Projet"},
+      {"value": "Lecture", "label": "Lecture"}
+    ]
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f7f8;
+      color: #333;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: #e0e0e0;
+    }
+
+    .controls button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button[type="submit"] {
+      background-color: #28a745;
+      border: none;
+      padding: 12px;
+      color: white;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      grid-column: 1 / -1;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    thead th {
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 12px;
+      text-align: left;
+      border-bottom: 2px solid #ddd;
+    }
+
+    tbody td {
+      border-bottom: 1px solid #eee;
+      padding: 12px;
+      vertical-align: middle;
+    }
+
+    .status-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .status-button {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      color: #333;
+      background-color: white;
+      transition: all 0.2s;
+    }
+
+    .status-button:hover {
+      opacity: 0.9;
+    }
+
+    .status-Pas_commencée {
+      background-color: #f5f5f5;
+    }
+    .status-Débutée {
+      background-color: #fff3e0;
+      border-color: #ffb74d;
+    }
+    .status-À_moitié_réalisée {
+      background-color: #e3f2fd;
+      border-color: #64b5f6;
+    }
+    .status-En_progression {
+      background-color: #e8f5e9;
+      border-color: #81c784;
+    }
+    .status-Terminée {
+      background-color: #ffebee;
+      border-color: #e57373;
+      color: #d32f2f;
+    }
+
+    .status-button[disabled] {
+      font-weight: bold;
+      cursor: default;
+      opacity: 1;
+    }
+
+    .completed-section {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px dashed #ccc;
+    }
+
+    @media (max-width: 768px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+      
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      
+      thead tr {
+        display: none;
+      }
+      
+      tbody td {
+        border: none;
+        padding: 10px;
+        position: relative;
+        padding-left: 50%;
+      }
+      
+      tbody td::before {
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+      
+      tbody td:nth-of-type(1)::before { content: "Titre"; }
+      tbody td:nth-of-type(2)::before { content: "Priorité"; }
+      tbody td:nth-of-type(3)::before { content: "Statut"; }
+      tbody td:nth-of-type(4)::before { content: "Difficulté"; }
+      tbody td:nth-of-type(5)::before { content: "Durée"; }
+      tbody td:nth-of-type(6)::before { content: "Type"; }
+      tbody td:nth-of-type(7)::before { content: "Changer statut"; }
+      
+      .status-buttons {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>To Do List Travail</h1>
+    
+    <div class="controls">
+      <button id="filterAll" class="active">Toutes les tâches</button>
+      <button id="filterActive">Tâches actives</button>
+      <button id="filterCompleted">Tâches terminées</button>
+      <select id="sortBy">
+        <option value="">Trier par...</option>
+        <option value="priority">Priorité</option>
+        <option value="difficulty">Difficulté</option>
+        <option value="duration">Durée</option>
+      </select>
+    </div>
+    
+    <section id="form-section">
+      <form id="taskForm">
+        <div>
+          <label for="title">Titre de la tâche :</label>
+          <input type="text" id="title" name="title" required placeholder="Ex : Révision DM" />
+        </div>
+
+        <div>
+          <label for="priority">Priorité :</label>
+          <select id="priority" name="priority" required>
+            <option value="">-- Priorité --</option>
+          </select>
+          <script>
+            const priorityData = JSON.parse(document.getElementById('priorityData').textContent);
+            const prioritySelect = document.getElementById('priority');
+            
+            priorityData.forEach(item => {
+              const optionHTML = `<option value="${item.value}">${item.label}</option>`;
+              prioritySelect.insertAdjacentHTML('beforeend', optionHTML);
+            });
+          </script>
+        </div>
+
+        <div>
+          <label for="progress">Statut :</label>
+          <select id="progress" name="progress" required>
+            <option value="">-- Statut --</option>
+          </select>
+          <script>
+            const progressData = JSON.parse(document.getElementById('progressData').textContent);
+            const progressSelect = document.getElementById('progress');
+            
+            progressData.forEach(item => {
+              const optionHTML = `<option value="${item.value}">${item.label}</option>`;
+              progressSelect.insertAdjacentHTML('beforeend', optionHTML);
+            });
+          </script>
+        </div>
+
+        <div>
+          <label for="difficulty">Difficulté :</label>
+          <select id="difficulty" name="difficulty" required>
+            <option value="">-- Difficulté --</option>
+          </select>
+          <script>
+            const difficultyData = JSON.parse(document.getElementById('difficultyData').textContent);
+            const difficultySelect = document.getElementById('difficulty');
+            
+            difficultyData.forEach(item => {
+              const optionHTML = `<option value="${item.value}">${item.label}</option>`;
+              difficultySelect.insertAdjacentHTML('beforeend', optionHTML);
+            });
+          </script>
+        </div>
+
+        <div>
+          <label for="duration">Durée estimée :</label>
+          <select id="duration" name="duration" required>
+            <option value="">-- Durée --</option>
+          </select>
+          <script>
+            const durationData = JSON.parse(document.getElementById('durationData').textContent);
+            const durationSelect = document.getElementById('duration');
+            
+            durationData.forEach(item => {
+              const optionHTML = `<option value="${item.value}">${item.label}</option>`;
+              durationSelect.insertAdjacentHTML('beforeend', optionHTML);
+            });
+          </script>
+        </div>
+
+        <div>
+          <label for="type">Type de tâche :</label>
+          <select id="type" name="type" required>
+            <option value="">-- Type --</option>
+          </select>
+          <script>
+            const typeData = JSON.parse(document.getElementById('typeData').textContent);
+            const typeSelect = document.getElementById('type');
+            
+            typeData.forEach(item => {
+              const optionHTML = `<option value="${item.value}">${item.label}</option>`;
+              typeSelect.insertAdjacentHTML('beforeend', optionHTML);
+            });
+          </script>
+        </div>
+
+        <button type="button" onclick="saveTask()">Ajouter la tâche</button>
+      </form>
+    </section>
+
+    <section id="tasks-section">
+      <table id="taskTable">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Priorité</th>
+            <th>Statut</th>
+            <th>Difficulté</th>
+            <th>Durée</th>
+            <th>Type</th>
+            <th>Changer statut</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody"></tbody>
+      </table>
+    </section>
+
+    <section id="completed-section" class="completed-section">
+      <h2>Tâches terminées</h2>
+      <table id="completedTable">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Priorité</th>
+            <th>Statut</th>
+            <th>Difficulté</th>
+            <th>Durée</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="completedTableBody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    let currentFilter = "all";
+    let currentSort = "";
+
+    function saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function generateNewId() {
+      return tasks.length > 0 ? Math.max(...tasks.map(t => parseInt(t.id))) + 1 : 1;
+    }
+
+    function saveTask() {
+      const form = document.getElementById("taskForm");
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      tasks.push({
+        id: generateNewId(),
+        title: form.title.value.trim(),
+        priority: form.priority.value,
+        progress: form.progress.value,
+        difficulty: form.difficulty.value,
+        duration: form.duration.value,
+        type: form.type.value
+      });
+
+      saveTasks();
+      renderTasks();
+      form.reset();
+    }
+
+    function createStatusButtons(task) {
+      const statuses = [
+        "Pas commencée",
+        "Débutée",
+        "À moitié réalisée",
+        "En progression",
+        "Terminée"
+      ];
+      
+      const container = document.createElement("div");
+      container.className = "status-buttons";
+      
+      statuses.forEach(status => {
+        const btn = document.createElement("button");
+        btn.textContent = status;
+        btn.className = `status-button status-${status.replace(/\s+/g, '_')}`;
+        
+        if (task.progress === status) {
+          btn.disabled = true;
+        }
+        
+        btn.addEventListener("click", () => updateTaskStatus(task.id, status));
+        container.appendChild(btn);
+      });
+      
+      return container;
+    }
+
+    function updateTaskStatus(id, newStatus) {
+      tasks = tasks.map(t => t.id === id ? {...t, progress: newStatus} : t);
+      saveTasks();
+      renderTasks();
+    }
+
+    function sortTasks(taskList) {
+      if (!currentSort) return taskList;
+      
+      return [...taskList].sort((a, b) => {
+        if (currentSort === "priority") {
+          const priorityOrder = {
+            "Très élevée": 0,
+            "Élevée": 1,
+            "Moyenne": 2,
+            "Basse": 3,
+            "Très basse": 4
+          };
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        
+        if (currentSort === "difficulty") {
+          const difficultyOrder = {
+            "Très difficile": 0,
+            "Difficile": 1,
+            "Modérée": 2,
+            "Facile": 3,
+            "Très facile": 4
+          };
+          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+        }
+        
+        if (currentSort === "duration") {
+          const durationOrder = {
+            "Plus de 4 heures": 0,
+            "2 à 4 heures": 1,
+            "1 à 2 heures": 2,
+            "30 min à 1h": 3,
+            "Moins de 30 minutes": 4
+          };
+          return durationOrder[a.duration] - durationOrder[b.duration];
+        }
+        
+        return 0;
+      });
+    }
+
+    function renderTasks() {
+      const tbody = document.getElementById("taskTableBody");
+      const completedTbody = document.getElementById("completedTableBody");
+      tbody.innerHTML = "";
+      completedTbody.innerHTML = "";
+
+      let filteredTasks = tasks;
+      if (currentFilter === "active") {
+        filteredTasks = tasks.filter(t => t.progress !== "Terminée");
+      } else if (currentFilter === "completed") {
+        filteredTasks = tasks.filter(t => t.progress === "Terminée");
+      }
+
+      const sortedTasks = sortTasks(filteredTasks);
+
+      sortedTasks
+        .filter(t => t.progress !== "Terminée" || currentFilter === "completed")
+        .forEach(task => {
+          const tr = document.createElement("tr");
+
+          [
+            task.title,
+            task.priority,
+            task.progress,
+            task.difficulty,
+            task.duration,
+            task.type
+          ].forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+
+          const tdStatus = document.createElement("td");
+          tdStatus.appendChild(createStatusButtons(task));
+          tr.appendChild(tdStatus);
+
+          tbody.appendChild(tr);
+        });
+
+      tasks
+        .filter(t => t.progress === "Terminée")
+        .forEach(task => {
+          const tr = document.createElement("tr");
+
+          [
+            task.title,
+            task.priority,
+            task.progress,
+            task.difficulty,
+            task.duration,
+            task.type
+          ].forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+          });
+
+          completedTbody.appendChild(tr);
+        });
+
+      document.getElementById("completed-section").style.display = 
+        currentFilter === "completed" ? "none" : "block";
+    }
+
+    document.getElementById("filterAll").addEventListener("click", () => {
+      currentFilter = "all";
+      document.querySelectorAll(".controls button").forEach(btn => 
+        btn.classList.remove("active"));
+      document.getElementById("filterAll").classList.add("active");
+      renderTasks();
+    });
+
+    document.getElementById("filterActive").addEventListener("click", () => {
+      currentFilter = "active";
+      document.querySelectorAll(".controls button").forEach(btn => 
+        btn.classList.remove("active"));
+      document.getElementById("filterActive").classList.add("active");
+      renderTasks();
+    });
+
+    document.getElementById("filterCompleted").addEventListener("click", () => {
+      currentFilter = "completed";
+      document.querySelectorAll(".controls button").forEach(btn => 
+        btn.classList.remove("active"));
+      document.getElementById("filterCompleted").classList.add("active");
+      renderTasks();
+    });
+
+    document.getElementById("sortBy").addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      renderTasks();
+    });
+
+    document.getElementById("taskForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+    });
+
+    renderTasks();
+  </script>
+</body>
+</html>
